@@ -14,12 +14,12 @@ line containing:
 
     For example:
 
-    /data/imgs/img_001.jpg,837,346,981,456,cow
+    /data/imgs/img_001.jpg,837,346,981,456,cow,training
     
-    /data/imgs/img_002.jpg,215,312,279,391,cat
+    /data/imgs/img_002.jpg,215,312,279,391,cat,validation
 
     The classes will be inferred from the file. To use the simple parser instead of the default pascal voc style parser,
-    use the command line option `-o simple`. For example `python train_frcnn.py -o simple -p my_data.txt`.
+    use the command line option `-o simple`. For example `python train_frcnn.py -o simple -p my_data.txt`. Only images with imageset set to either `training` or `validation` will be used.
 
 - Running `train_frcnn.py` will write weights to disk to an hdf5 file, as well as all the setting of the training run to a `pickle` file. These
 settings can then be loaded by `test_frcnn.py` for any testing.
