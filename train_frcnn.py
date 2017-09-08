@@ -66,7 +66,7 @@ if options.network == 'vgg':
 	C.network = 'vgg'
 	from keras_frcnn import vgg as nn
 elif options.network == 'vgg_lite':
-	C.network = 'vgg'
+	C.network = 'vgg_lite'
 	from keras_frcnn import vgg_lite as nn
 elif options.network == 'resnet50':
 	from keras_frcnn import resnet as nn
