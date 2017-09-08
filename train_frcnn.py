@@ -152,7 +152,7 @@ model_rpn.compile(optimizer=optimizer, loss=[losses.rpn_loss_cls(num_anchors), l
 model_classifier.compile(optimizer=optimizer_classifier, loss=[losses.class_loss_cls, losses.class_loss_regr(len(classes_count)-1)], metrics={'dense_class_{}'.format(len(classes_count)): 'accuracy'})
 model_all.compile(optimizer='sgd', loss='mae')
 
-epoch_length = 50
+epoch_length = 500
 num_epochs = int(options.num_epochs)
 iter_num = 0
 
@@ -263,7 +263,7 @@ for epoch_num in range(num_epochs):
 				rpn_accuracy_for_epoch = []
                 
 				if C.use_validation:
-					val_losses = get_validation_loss(data_gen_val, 20, #len(val_imgs),
+					val_losses = get_validation_loss(data_gen_val, len(val_imgs),
                                                      model_rpn, model_classifier, C)
 
 				if C.verbose:

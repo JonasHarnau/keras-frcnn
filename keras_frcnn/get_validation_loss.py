@@ -14,7 +14,8 @@ def get_validation_loss(data_gen_val, epoch_length, model_rpn, model_classifier,
 	iter_num = 0
     
 	progbar = generic_utils.Progbar(epoch_length)
-
+	print('Validating')
+    
 	for epoch_num in range(epoch_length):
 
 		try:
@@ -28,7 +29,7 @@ def get_validation_loss(data_gen_val, epoch_length, model_rpn, model_classifier,
 
 			X, Y, img_data = next(data_gen_val)
 
-			loss_rpn = model_rpn.evaluate(X, Y)
+			loss_rpn = model_rpn.evaluate(X, Y, verbose=0)
 
 			P_rpn = model_rpn.predict_on_batch(X)
 
@@ -77,7 +78,7 @@ def get_validation_loss(data_gen_val, epoch_length, model_rpn, model_classifier,
 				else:
 					sel_samples = random.choice(pos_samples)
 
-			loss_class = model_classifier.evaluate([X, X2[:, sel_samples, :]], [Y1[:, sel_samples, :], Y2[:, sel_samples, :]])
+			loss_class = model_classifier.evaluate([X, X2[:, sel_samples, :]], [Y1[:, sel_samples, :], Y2[:, sel_samples, :]], verbose=0)
 
 			losses[iter_num, 0] = loss_rpn[1]
 			losses[iter_num, 1] = loss_rpn[2]
@@ -88,10 +89,10 @@ def get_validation_loss(data_gen_val, epoch_length, model_rpn, model_classifier,
 
 			iter_num += 1
 
-			progbar.update(iter_num, [
-                ('val_rpn_cls', np.mean(losses[:iter_num, 0])), ('val_rpn_regr', np.mean(losses[:iter_num, 1])),
-                ('val_detector_cls', np.mean(losses[:iter_num, 2])), ('val_detector_regr', np.mean(losses[:iter_num, 3]))
-            ], force=True)
+			progbar.update(iter_num, 
+                           [('val_rpn_cls', np.mean(losses[:iter_num, 0])), ('val_rpn_regr', np.mean(losses[:iter_num, 1])),
+                            ('val_detector_cls', np.mean(losses[:iter_num, 2])), ('val_detector_regr', np.mean(losses[:iter_num, 3]))]
+                          )
 
 			if iter_num == epoch_length:
 				loss_rpn_cls = np.mean(losses[:, 0])
