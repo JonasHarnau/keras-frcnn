@@ -91,8 +91,6 @@ if 'bg' not in classes_count:
 
 C.class_mapping = class_mapping
 
-inv_map = {v: k for k, v in class_mapping.items()}
-
 print('Training images per class:')
 pprint.pprint(classes_count)
 print('Num classes (including bg) = {}'.format(len(classes_count)))
