@@ -35,6 +35,7 @@ parser.add_option("--config_filename", dest="config_filename", help=
 				default="config.pickle")
 parser.add_option("--output_weight_path", dest="output_weight_path", help="Output path for weights.", default='./model_frcnn.hdf5')
 parser.add_option("--input_weight_path", dest="input_weight_path", help="Input path for weights. If not specified, will try to load default weights provided by keras.")
+parser.add_option("--use_validation", dest="use_validation", help="Determines if we evaluate against the validation set loss.", default=False)
 
 (options, args) = parser.parse_args()
 
@@ -57,6 +58,8 @@ C.rot_90 = bool(options.rot_90)
 
 C.model_path = options.output_weight_path
 C.num_rois = int(options.num_rois)
+
+C.use_validation = bool(options.use_validation)
 
 if options.network == 'vgg':
 	C.network = 'vgg'
@@ -161,6 +164,9 @@ start_time = time.time()
 
 best_loss = np.Inf
 
+if C.use_validation:
+    val_best_loss = np.Inf
+
 class_mapping_inv = {v: k for k, v in class_mapping.items()}
 print('Starting training')
 
@@ -252,9 +258,13 @@ for epoch_num in range(num_epochs):
 				loss_class_cls = np.mean(losses[:, 2])
 				loss_class_regr = np.mean(losses[:, 3])
 				class_acc = np.mean(losses[:, 4])
-
+				curr_loss = loss_rpn_cls + loss_rpn_regr + loss_class_cls + loss_class_regr
+                
 				mean_overlapping_bboxes = float(sum(rpn_accuracy_for_epoch)) / len(rpn_accuracy_for_epoch)
 				rpn_accuracy_for_epoch = []
+                
+				if C.use_validation:
+					val_losses = get_validation_loss(data_gen_val, len(val_imgs))
 
 				if C.verbose:
 					print('Mean number of bounding boxes from RPN overlapping ground truth boxes: {}'.format(mean_overlapping_bboxes))
@@ -263,9 +273,14 @@ for epoch_num in range(num_epochs):
 					print('Loss RPN regression: {}'.format(loss_rpn_regr))
 					print('Loss Detector classifier: {}'.format(loss_class_cls))
 					print('Loss Detector regression: {}'.format(loss_class_regr))
+					print('Total losss :{}'.format(curr_loss)
+					if C.use_validation:
+						print('Validation loss RPN classifier: {}'.format(val_losses['loss_rpn_cls']))
+						print('Validation loss RPN regression: {}'.format(val_losses['loss_rpn_regr']))
+						print('Validation loss Detector classifier: {}'.format(val_losses['loss_class_cls']))
+						print('Validation loss Detector regression: {}'.format(val_losses['loss_class_regr']))
+						print('Validation total loss :{}'.format(val_losses['curr_loss']))                          
 					print('Elapsed time: {}'.format(time.time() - start_time))
-
-				curr_loss = loss_rpn_cls + loss_rpn_regr + loss_class_cls + loss_class_regr
 				iter_num = 0
 				start_time = time.time()
 
@@ -273,7 +288,19 @@ for epoch_num in range(num_epochs):
 					if C.verbose:
 						print('Total loss decreased from {} to {}, saving weights'.format(best_loss,curr_loss))
 					best_loss = curr_loss
-					model_all.save_weights(C.model_path)
+					if not C.use_validation:
+						model_all.save_weights(C.model_path)
+
+				if C.use_validation:
+					if val_losses['curr_loss'] < val_best_loss:
+						if C.verbose:
+							print(('Validation total loss decreased from {} to {}'.format(val_best_loss,val_losses['curr_loss']) +
+                                   'saving weights'))
+						val_best_loss = val_losses['curr_loss']
+						model_all.save_weights(C.model_path)
+					else:
+						if C.verbose:
+							print('Validation total loss did not decrease.')
 
 				break
 
