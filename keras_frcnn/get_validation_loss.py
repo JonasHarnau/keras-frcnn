@@ -1,6 +1,7 @@
 import keras_frcnn.roi_helpers as roi_helpers
 from keras.utils import generic_utils
 from keras import backend as K
+import numpy as np
 
 def get_validation_loss(data_gen_val, epoch_length, model_rpn, model_classifier, C):
     
@@ -8,11 +9,13 @@ def get_validation_loss(data_gen_val, epoch_length, model_rpn, model_classifier,
 	rpn_accuracy_rpn_monitor = []
 	rpn_accuracy_for_epoch = []
 
+	class_mapping = C.class_mapping
+    
 	iter_num = 0
     
-	for epoch_num in range(epoch_length):
+	progbar = generic_utils.Progbar(epoch_length)
 
-		progbar = generic_utils.Progbar(epoch_length)
+	for epoch_num in range(epoch_length):
 
 		while True:
 			try:
@@ -96,10 +99,8 @@ def get_validation_loss(data_gen_val, epoch_length, model_rpn, model_classifier,
 					loss_class_regr = np.mean(losses[:, 3])
 					class_acc = np.mean(losses[:, 4])
 					curr_loss = loss_rpn_cls + loss_rpn_regr + loss_class_cls + loss_class_regr
-                
-					mean_overlapping_bboxes = float(sum(rpn_accuracy_for_epoch)) / len(rpn_accuracy_for_epoch)
-                    
-                    break
+					mean_overlapping_bboxes = float(sum(rpn_accuracy_for_epoch)) / len(rpn_accuracy_for_epoch)     
+					break
 			except Exception as e:
 				print('Exception: {}'.format(e))
 				continue

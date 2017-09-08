@@ -263,7 +263,8 @@ for epoch_num in range(num_epochs):
 				rpn_accuracy_for_epoch = []
                 
 				if C.use_validation:
-					val_losses = get_validation_loss(data_gen_val, len(val_imgs), model_rpn, model_classifier, C)
+					val_losses = get_validation_loss(data_gen_val, len(val_imgs),
+                                                     model_rpn, model_classifier, C)
 
 				if C.verbose:
 					print('Mean number of bounding boxes from RPN overlapping ground truth boxes: {}'.format(mean_overlapping_bboxes))
