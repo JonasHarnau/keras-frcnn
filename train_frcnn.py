@@ -263,7 +263,7 @@ for epoch_num in range(num_epochs):
 				rpn_accuracy_for_epoch = []
                 
 				if C.use_validation:
-					val_losses = get_validation_loss(data_gen_val, len(val_imgs))
+					val_losses = get_validation_loss(data_gen_val, len(val_imgs), model_rpn, model_classifier, C)
 
 				if C.verbose:
 					print('Mean number of bounding boxes from RPN overlapping ground truth boxes: {}'.format(mean_overlapping_bboxes))
@@ -272,8 +272,11 @@ for epoch_num in range(num_epochs):
 					print('Loss RPN regression: {}'.format(loss_rpn_regr))
 					print('Loss Detector classifier: {}'.format(loss_class_cls))
 					print('Loss Detector regression: {}'.format(loss_class_regr))
-					print('Total losss :{}'.format(curr_loss)
+					print('Total losss :{}'.format(curr_loss))
 					if C.use_validation:
+						print(('Mean number of bounding boxes from RPN overlapping ground truth boxes:' + 
+                               '{}'.format(val_losses['mean_overlapping_bboxes'])))
+						print('Classifier accuracy for bounding boxes from RPN: {}'.format(val_losses['class_acc']))
 						print('Validation loss RPN classifier: {}'.format(val_losses['loss_rpn_cls']))
 						print('Validation loss RPN regression: {}'.format(val_losses['loss_rpn_regr']))
 						print('Validation loss Detector classifier: {}'.format(val_losses['loss_class_cls']))
