@@ -275,9 +275,9 @@ for epoch_num in range(num_epochs):
 					print('Loss Detector regression: {}'.format(loss_class_regr))
 					print('Total losss :{}'.format(curr_loss))
 					if C.use_validation:
-						print(('Mean number of bounding boxes from RPN overlapping ground truth boxes:' + 
+						print(('Validation mean number of bounding boxes from RPN overlapping ground truth boxes:' + 
                                '{}'.format(val_losses['mean_overlapping_bboxes'])))
-						print('Classifier accuracy for bounding boxes from RPN: {}'.format(val_losses['class_acc']))
+						print('Validation classifier accuracy for bounding boxes from RPN: {}'.format(val_losses['class_acc']))
 						print('Validation loss RPN classifier: {}'.format(val_losses['loss_rpn_cls']))
 						print('Validation loss RPN regression: {}'.format(val_losses['loss_rpn_regr']))
 						print('Validation loss Detector classifier: {}'.format(val_losses['loss_class_cls']))
