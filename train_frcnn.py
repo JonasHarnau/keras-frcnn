@@ -152,7 +152,7 @@ model_rpn.compile(optimizer=optimizer, loss=[losses.rpn_loss_cls(num_anchors), l
 model_classifier.compile(optimizer=optimizer_classifier, loss=[losses.class_loss_cls, losses.class_loss_regr(len(classes_count)-1)], metrics={'dense_class_{}'.format(len(classes_count)): 'accuracy'})
 model_all.compile(optimizer='sgd', loss='mae')
 
-epoch_length = 1000
+epoch_length = 50
 num_epochs = int(options.num_epochs)
 iter_num = 0
 
@@ -263,7 +263,7 @@ for epoch_num in range(num_epochs):
 				rpn_accuracy_for_epoch = []
                 
 				if C.use_validation:
-					val_losses = get_validation_loss(data_gen_val, len(val_imgs),
+					val_losses = get_validation_loss(data_gen_val, 20, #len(val_imgs),
                                                      model_rpn, model_classifier, C)
 
 				if C.verbose:
@@ -289,16 +289,18 @@ for epoch_num in range(num_epochs):
 
 				if curr_loss < best_loss:
 					if C.verbose:
-						print('Total loss decreased from {} to {}, saving weights'.format(best_loss,curr_loss))
+						if not C.use_validation:
+							print('Total loss decreased from {} to {}, saving weights'.format(best_loss,curr_loss))
+							model_all.save_weights(C.model_path)
+						else:
+							print('Total loss decreased from {} to {}'.format(best_loss,curr_loss))
 					best_loss = curr_loss
-					if not C.use_validation:
-						model_all.save_weights(C.model_path)
 
 				if C.use_validation:
 					if val_losses['curr_loss'] < val_best_loss:
 						if C.verbose:
 							print(('Validation total loss decreased from {} to {}'.format(val_best_loss,val_losses['curr_loss']) +
-                                   'saving weights'))
+                                   ', saving weights'))
 						val_best_loss = val_losses['curr_loss']
 						model_all.save_weights(C.model_path)
 					else:
