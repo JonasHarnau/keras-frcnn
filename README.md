@@ -10,7 +10,7 @@ USAGE:
 - simple_parser.py provides an alternative way to input data, using a text file. Simply provide a text file, with each
 line containing:
 
-    `filepath,x1,y1,x2,y2,class_name`
+    `filepath,x1,y1,x2,y2,class_name,imageset`
 
     For example:
 
