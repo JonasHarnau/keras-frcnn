@@ -65,9 +65,9 @@ C.use_validation = bool(options.use_validation)
 if options.network == 'vgg':
 	C.network = 'vgg'
 	from keras_frcnn import vgg as nn
-elif options.network == 'vgg_light':
+elif options.network == 'vgg_lite':
 	C.network = 'vgg'
-	from keras_frcnn import vgg_light as nn
+	from keras_frcnn import vgg_lite as nn
 elif options.network == 'resnet50':
 	from keras_frcnn import resnet as nn
 	C.network = 'resnet50'
