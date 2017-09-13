@@ -26,6 +26,7 @@ parser.add_option("-n", "--num_rois", dest="num_rois",
 parser.add_option("--config_filename", dest="config_filename", help=
                 "Location to read the metadata related to the training (generated when training).",
                 default="config.pickle")
+parser.add_option("--input_weight_path", dest="input_weight_path", help="Input path for weights. If not specified read from config file.")
 parser.add_option("--logs_path", dest="logs_path", help="Where logs for the losses should be saved.", default='./first_stage_logs.csv')
 
 (options, args) = parser.parse_args()
@@ -36,7 +37,6 @@ if not options.path:   # if filename is not given
 if not options.output_path:   # if filename is not given
     parser.error('Error: path to output data must be specified. Pass --output_path to command line')
     
-    
 with open(options.config_filename, 'rb') as f_in:
     C = pickle.load(f_in)
 
@@ -46,6 +46,9 @@ elif C.network == 'vgg_lite':
     from keras_frcnn import vgg_lite as nn
 else:
     import keras_frcnn.resnet as nn
+    
+if options.input_weight_path:
+    C.model_path = options.input_weight_path
     
 # turn off any data augmentation at test time
 C.use_horizontal_flips = False
