@@ -313,7 +313,7 @@ def get_anchor_gt(all_img_data, class_count, C, img_length_calc_function, backen
 
 				# Zero-center by mean pixel, and preprocess image
 
-				x_img = x_img[:,:, (2, 1, 0)]  # BGR -> RGB
+				# x_img = x_img[:,:, (2, 1, 0)]  # BGR -> RGB (see here: https://github.com/yhenon/keras-frcnn/issues/148)
 				x_img = x_img.astype(np.float32)
 				x_img[:, :, 0] -= C.img_channel_mean[0]
 				x_img[:, :, 1] -= C.img_channel_mean[1]
