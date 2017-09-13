@@ -176,6 +176,7 @@ for i, img_path in enumerate(file_info['filenames']):
     
     
     row, col = np.unravel_index(np.argmax(P_cls[0][:,:-1]), P_cls[0][:,:-1].shape)
+    highest_prob = np.max(P_cls[0][:,:-1])    
     cls_num = col
     
     (x, y, w, h) = ROIs[0, row, :]
@@ -186,15 +187,18 @@ for i, img_path in enumerate(file_info['filenames']):
     tw /= C.classifier_regr_std[2]
     th /= C.classifier_regr_std[3]
     x, y, w, h = roi_helpers.apply_regr(x, y, w, h, tx, ty, tw, th)
-    crop_img = np.round(X[0][max(C.rpn_stride*y,0):C.rpn_stride*(y+h), 
-                             max(C.rpn_stride*x,0):C.rpn_stride*(x+w)]).astype(np.uint8)
+    if highest_prob > 0.5:
+        crop_img = np.round(X[0][max(C.rpn_stride*y,0):C.rpn_stride*(y+h), 
+                                 max(C.rpn_stride*x,0):C.rpn_stride*(x+w)]).astype(np.uint8)
+    else: # don't crop
+        crop_img = X[0].astype(np.uint8)
     cv2.imwrite(os.path.join(output_path, file_info['target_names'][file_info['target'][i]],
                              file_info['img_name'][i] + '.png'), cv2.resize(crop_img, (224, 224), 
                                                                             interpolation=cv2.INTER_CUBIC))    
 #    except:
 #        pass
     
-    logs.loc[file_info['img_name'][i]] = np.max(P_cls[0][:,:-1])
+    logs.loc[file_info['img_name'][i]] = highest_prob
 
     progbar.update(i+1)
     
