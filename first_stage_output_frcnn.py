@@ -76,7 +76,7 @@ def format_img_size(img, C):
 
 def format_img_channels(img, C):
     """ formats the image channels based on config """
-    img = img[:, :, (2, 1, 0)]
+    img = img[:, :, (2, 1, 0)] # trained this wrong, have to adjust!
     img = img.astype(np.float32)
     img[:, :, 0] -= C.img_channel_mean[0]
     img[:, :, 1] -= C.img_channel_mean[1]
@@ -86,11 +86,11 @@ def format_img_channels(img, C):
     img = np.expand_dims(img, axis=0)
     return img
 
-def format_img(img, C):
-    """ formats an image for model prediction based on config """
-    img, ratio = format_img_size(img, C)
-    img = format_img_channels(img, C)
-    return img, ratio
+#def format_img(img, C):
+#    """ formats an image for model prediction based on config """
+#    img, ratio = format_img_size(img, C)
+#    img = format_img_channels(img, C)
+#    return img, ratio
 
 class_mapping = C.class_mapping
 
@@ -152,9 +152,9 @@ for i, img_path in enumerate(file_info['filenames']):
     if not img_path.lower().endswith(('.bmp', '.jpeg', '.jpg', '.png', '.tif', '.tiff')):
         continue
 
-    img = cv2.imread(img_path)
-
-    X, ratio = format_img(img, C)
+    img, ratio = format_img_size(cv2.imread(img_path), C)
+    
+    X = format_img_channels(img, C)
 
     if K.image_dim_ordering() == 'tf':
         X = np.transpose(X, (0, 2, 3, 1))
@@ -191,10 +191,9 @@ for i, img_path in enumerate(file_info['filenames']):
     th /= C.classifier_regr_std[3]
     x, y, w, h = roi_helpers.apply_regr(x, y, w, h, tx, ty, tw, th)
     if highest_prob > 0.5:
-        crop_img = np.round(X[0][max(C.rpn_stride*y,0):C.rpn_stride*(y+h), 
-                                 max(C.rpn_stride*x,0):C.rpn_stride*(x+w)]).astype(np.uint8)
+        crop_img = img[max(C.rpn_stride*y,0):C.rpn_stride*(y+h), max(C.rpn_stride*x,0):C.rpn_stride*(x+w)]
     else: # don't crop
-        crop_img = X[0].astype(np.uint8)
+        crop_img = img
     cv2.imwrite(os.path.join(output_path, file_info['target_names'][file_info['target'][i]],
                              file_info['img_name'][i] + '.png'), cv2.resize(crop_img, (224, 224), 
                                                                             interpolation=cv2.INTER_CUBIC))    
