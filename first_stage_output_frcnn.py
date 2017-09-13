@@ -189,7 +189,8 @@ for i, img_path in enumerate(file_info['filenames']):
     crop_img = np.round(X[0][max(C.rpn_stride*y,0):C.rpn_stride*(y+h), 
                              max(C.rpn_stride*x,0):C.rpn_stride*(x+w)]).astype(np.uint8)
     cv2.imwrite(os.path.join(output_path, file_info['target_names'][file_info['target'][i]],
-                             file_info['img_name'][i] + '.png'), crop_img)    
+                             file_info['img_name'][i] + '.png'), cv2.resize(crop_img, (224, 224), 
+                                                                            interpolation=cv2.INTER_CUBIC))    
 #    except:
 #        pass
     
