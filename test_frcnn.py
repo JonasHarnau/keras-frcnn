@@ -22,24 +22,22 @@ parser.add_option("-n", "--num_rois", dest="num_rois",
 parser.add_option("--config_filename", dest="config_filename", help=
 				"Location to read the metadata related to the training (generated when training).",
 				default="config.pickle")
-parser.add_option("--network", dest="network", help="Base network to use. Supports vgg or resnet50.", default='resnet50')
 
 (options, args) = parser.parse_args()
 
 if not options.test_path:   # if filename is not given
 	parser.error('Error: path to test data must be specified. Pass --path to command line')
 
-
-config_output_filename = options.config_filename
-
-with open(config_output_filename, 'rb') as f_in:
+with open(options.config_filename, 'rb') as f_in:
 	C = pickle.load(f_in)
 
-if C.network == 'resnet50':
+if C.network == 'vgg':
+	from keras_frcnn import vgg as nn
+elif C.network == 'vgg_lite':
+	from keras_frcnn import vgg_lite as nn
+else:
 	import keras_frcnn.resnet as nn
-elif C.network == 'vgg':
-	import keras_frcnn.vgg as nn
-
+    
 # turn off any data augmentation at test time
 C.use_horizontal_flips = False
 C.use_vertical_flips = False
@@ -84,10 +82,10 @@ def format_img(img, C):
 # Method to transform the coordinates of the bounding box to its original size
 def get_real_coordinates(ratio, x1, y1, x2, y2):
 
-	real_x1 = int(round(x1 // ratio))
-	real_y1 = int(round(y1 // ratio))
-	real_x2 = int(round(x2 // ratio))
-	real_y2 = int(round(y2 // ratio))
+	real_x1 = int(round(x1 / ratio))
+	real_y1 = int(round(y1 / ratio))
+	real_x2 = int(round(x2 / ratio))
+	real_y2 = int(round(y2 / ratio))
 
 	return (real_x1, real_y1, real_x2 ,real_y2)
 
@@ -103,7 +101,7 @@ C.num_rois = int(options.num_rois)
 
 if C.network == 'resnet50':
 	num_features = 1024
-elif C.network == 'vgg':
+elif C.network == 'vgg' or C.network == 'vgg_lite':
 	num_features = 512
 
 if K.image_dim_ordering() == 'th':
@@ -144,8 +142,6 @@ all_imgs = []
 classes = {}
 
 bbox_threshold = 0.8
-
-visualise = True
 
 for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 	if not img_name.lower().endswith(('.bmp', '.jpeg', '.jpg', '.png', '.tif', '.tiff')):
@@ -242,6 +238,7 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 
 	print('Elapsed time = {}'.format(time.time() - st))
 	print(all_dets)
-	cv2.imshow('img', img)
-	cv2.waitKey(0)
-	# cv2.imwrite('./results_imgs/{}.png'.format(idx),img)
+	#cv2.imshow('img', img)
+	#cv2.waitKey(0)
+	if len(bboxes.keys()) > 0:
+		cv2.imwrite('./results_imgs/{}.png'.format(img_name.split()[0]),img)
