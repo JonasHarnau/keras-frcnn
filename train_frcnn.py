@@ -32,6 +32,7 @@ parser.add_option("--vf", dest="vertical_flips", help="Augment with vertical fli
 parser.add_option("--rot", "--rot_90", dest="rot_90", help="Augment with 90 degree rotations in training. (Default=false).",
                   action="store_true", default=False)
 parser.add_option("--num_epochs", dest="num_epochs", help="Number of epochs.", default=2000)
+parser.add_option("--epoch_length", dest="epoch_length", help="Length of each epoch.", default=2000)
 parser.add_option("--config_filename", dest="config_filename", help=
                 "Location to store all the metadata related to the training (to be used when testing).",
                 default="config.pickle")
@@ -158,7 +159,7 @@ model_rpn.compile(optimizer=optimizer, loss=[losses.rpn_loss_cls(num_anchors), l
 model_classifier.compile(optimizer=optimizer_classifier, loss=[losses.class_loss_cls, losses.class_loss_regr(len(classes_count)-1)], metrics={'dense_class_{}'.format(len(classes_count)): 'accuracy'})
 model_all.compile(optimizer='sgd', loss='mae')
 
-epoch_length = 500
+epoch_length = int(options.epoch_length)
 num_epochs = int(options.num_epochs)
 iter_num = 0
 
