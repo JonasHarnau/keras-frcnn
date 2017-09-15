@@ -18,7 +18,6 @@ import pandas as pd
 sys.setrecursionlimit(40000)
 
 parser = OptionParser()
-
 parser.add_option("-p", "--path", dest="path", help="Path to data. Assumes subfolders correspond to labels.")
 parser.add_option("--output_path", dest="output_path", help="Path to save the output data to.")
 parser.add_option("-n", "--num_rois", dest="num_rois",
@@ -50,7 +49,7 @@ else:
 if options.input_weight_path:
     C.model_path = options.input_weight_path
     
-# turn off any data augmentation at test time
+# turn off any data augmentation
 C.use_horizontal_flips = False
 C.use_vertical_flips = False
 C.rot_90 = False
@@ -76,7 +75,7 @@ def format_img_size(img, C):
 
 def format_img_channels(img, C):
     """ formats the image channels based on config """
-    img = img[:, :, (2, 1, 0)] # trained this wrong, have to adjust!
+    #img = img[:, :, (2, 1, 0)] # (see here: https://github.com/yhenon/keras-frcnn/issues/148)
     img = img.astype(np.float32)
     img[:, :, 0] -= C.img_channel_mean[0]
     img[:, :, 1] -= C.img_channel_mean[1]
@@ -145,8 +144,9 @@ for label in file_info['target_names']:
         os.mkdir(os.path.join(output_path, label))
     except FileExistsError:
         continue
-    
-progbar = Progbar(len(file_info['filenames']))
+
+if C.verbose == 2:
+    progbar = Progbar(len(file_info['filenames']))
 
 for i, img_path in enumerate(file_info['filenames']):
     if not img_path.lower().endswith(('.bmp', '.jpeg', '.jpg', '.png', '.tif', '.tiff')):
@@ -201,8 +201,9 @@ for i, img_path in enumerate(file_info['filenames']):
 #        pass
     
     logs.loc[file_info['img_name'][i]] = highest_prob
-
-    progbar.update(i+1)
+    
+    if C.verbose == 2:
+        progbar.update(i+1)
     
 print('saving logs')
 logs.to_csv(options.logs_path)

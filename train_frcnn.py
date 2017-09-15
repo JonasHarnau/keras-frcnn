@@ -39,6 +39,8 @@ parser.add_option("--output_weight_path", dest="output_weight_path", help="Outpu
 parser.add_option("--input_weight_path", dest="input_weight_path", help="Input path for weights. If not specified, will try to load default weights provided by keras.")
 parser.add_option("--use_validation", dest="use_validation", help="Determines if we evaluate against the validation set loss.", default=False)
 parser.add_option("--logs_path", dest="logs_path", help="Where logs for the losses should be saved.", default='./logs.csv')
+parser.add_option("--verbose", dest="verbose", help="Whether to output results on the way. 1 outputs logs, 2 also a progress bar.", default=0)
+
 
 (options, args) = parser.parse_args()
 
@@ -65,6 +67,8 @@ C.num_rois = int(options.num_rois)
 C.use_validation = bool(options.use_validation)
 C.logs_path = options.logs_path
 
+C.verbose = int(options.verbose)
+
 if options.network == 'vgg':
     C.network = 'vgg'
     from keras_frcnn import vgg as nn
@@ -77,7 +81,6 @@ elif options.network == 'resnet50':
 else:
     print('Not a valid model')
     raise ValueError
-
 
 # check if weight path was passed via command line
 if options.input_weight_path:
@@ -178,13 +181,14 @@ vis = True
 
 for epoch_num in range(num_epochs):
 
-    progbar = generic_utils.Progbar(epoch_length)
+    if C.verbose == 2:
+        progbar = generic_utils.Progbar(epoch_length)
     print('Epoch {}/{}'.format(epoch_num + 1, num_epochs))
 
     while True:
         try:
 
-            if len(rpn_accuracy_rpn_monitor) == epoch_length and C.verbose:
+            if (len(rpn_accuracy_rpn_monitor) == epoch_length) and (C.verbose > 0):
                 mean_overlapping_bboxes = float(sum(rpn_accuracy_rpn_monitor))/len(rpn_accuracy_rpn_monitor)
                 rpn_accuracy_rpn_monitor = []
                 print('Average number of overlapping bounding boxes from RPN = {} for {} previous iterations'.format(mean_overlapping_bboxes, epoch_length))
@@ -252,9 +256,10 @@ for epoch_num in range(num_epochs):
             losses[iter_num, 4] = loss_class[3]
 
             iter_num += 1
-
-            progbar.update(iter_num, [('rpn_cls', np.mean(losses[:iter_num, 0])), ('rpn_regr', np.mean(losses[:iter_num, 1])),
-                                      ('detector_cls', np.mean(losses[:iter_num, 2])), ('detector_regr', np.mean(losses[:iter_num, 3]))])
+            
+            if C.verbose == 2:
+                progbar.update(iter_num, [('rpn_cls', np.mean(losses[:iter_num, 0])), ('rpn_regr', np.mean(losses[:iter_num, 1])),
+                                          ('detector_cls', np.mean(losses[:iter_num, 2])), ('detector_regr', np.mean(losses[:iter_num, 3]))])
 
             if iter_num == epoch_length:
                 loss_rpn_cls = np.mean(losses[:, 0])
@@ -271,7 +276,7 @@ for epoch_num in range(num_epochs):
                     val_losses = get_validation_loss(data_gen_val, len(val_imgs),
                                                      model_rpn, model_classifier, C)
 
-                if C.verbose:
+                if C.verbose > 0:
                     print('Mean number of bounding boxes from RPN overlapping ground truth boxes: {}'.format(mean_overlapping_bboxes))
                     print('Classifier accuracy for bounding boxes from RPN: {}'.format(class_acc))
                     print('Loss RPN classifier: {}'.format(loss_rpn_cls))
@@ -306,7 +311,7 @@ for epoch_num in range(num_epochs):
                                     'val_loss_class_regr': val_losses['loss_class_regr'], 'val_curr_loss': val_losses['curr_loss']})
 
                 if curr_loss < best_loss:
-                    if C.verbose:
+                    if C.verbose > 0:
                         if not C.use_validation:
                             print('Total loss decreased from {} to {}, saving weights'.format(best_loss,curr_loss))
                             model_all.save_weights(C.model_path)
@@ -316,13 +321,13 @@ for epoch_num in range(num_epochs):
 
                 if C.use_validation:
                     if val_losses['curr_loss'] < val_best_loss:
-                        if C.verbose:
+                        if C.verbose > 0:
                             print(('Validation total loss decreased from {} to {}'.format(val_best_loss,val_losses['curr_loss']) +
                                    ', saving weights'))
                         val_best_loss = val_losses['curr_loss']
                         model_all.save_weights(C.model_path)
                     else:
-                        if C.verbose:
+                        if C.verbose > 0:
                             print('Validation total loss did not decrease.')
 
                 break
