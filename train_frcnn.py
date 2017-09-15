@@ -336,7 +336,9 @@ for epoch_num in range(num_epochs):
         except Exception as e:
             print('Exception: {}'.format(e))
             continue
+    
+    print('Saving logs')
+    pd.DataFrame(loss_log).to_csv(C.logs_path)
 
-print('Saving logs')
-pd.DataFrame(loss_log).to_csv(C.logs_path)
+    
 print('Training complete, exiting.')
