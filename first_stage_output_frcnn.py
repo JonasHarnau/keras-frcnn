@@ -190,10 +190,7 @@ for i, img_path in enumerate(file_info['filenames']):
     tw /= C.classifier_regr_std[2]
     th /= C.classifier_regr_std[3]
     x, y, w, h = roi_helpers.apply_regr(x, y, w, h, tx, ty, tw, th)
-    if highest_prob > 0.5:
-        crop_img = img[max(C.rpn_stride*y,0):C.rpn_stride*(y+h), max(C.rpn_stride*x,0):C.rpn_stride*(x+w)]
-    else: # don't crop
-        crop_img = img
+    crop_img = img[max(C.rpn_stride*y,0):C.rpn_stride*(y+h), max(C.rpn_stride*x,0):C.rpn_stride*(x+w)]
     cv2.imwrite(os.path.join(output_path, file_info['target_names'][file_info['target'][i]],
                              file_info['img_name'][i] + '.png'), cv2.resize(crop_img, (224, 224), 
                                                                             interpolation=cv2.INTER_CUBIC))    
